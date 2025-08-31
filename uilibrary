@@ -1,3 +1,9 @@
+if getgenv().alrloaded then
+    warn("already loaded!")
+    return
+end
+getgenv().alrloaded = true
+
 local library = { 
 	Options = {}, 
 	maincolor = Color3.fromRGB(97, 131, 202),
