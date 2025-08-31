@@ -5322,6 +5322,31 @@ function library:Window(Settings)
 		return baseUIScale.Scale
 	end
 
+	local function _SetKeybindListState(State)
+		if State then
+			KeybindList.Visible = true
+		else
+			KeybindList.Visible = false
+		end
+	end
+
+	local showKeybindList
+	if Settings.ShowKeybindList ~= nil then
+		showKeybindList = Settings.ShowKeybindList
+	else
+		showKeybindList = true
+	end
+
+	_SetKeybindListState(showKeybindList)
+
+	function WindowFunctions:SetKeybindListState(State)
+		_SetKeybindListState(State)
+	end
+
+	function WindowFunctions:GetKeybindListState(State)
+		return showUserInfo
+	end
+
 	local ClassParser = {
 		["Toggle"] = {
 			Save = function(Flag, data)
@@ -5618,7 +5643,15 @@ function library:Demo()
 					Lifetime = 5
 				})
 			end,
+		}),
+		ShowKeybindList = Window:GlobalSetting({
+			Name = "Show Keybind List",
+			Default = Window:GetKeybindListState(),
+			Callback = function(bool)
+				Window:SetKeybindListState(bool)
+			end,
 		})
+
 	}
 
 	local tabGroups = {
@@ -5832,4 +5865,6 @@ function library:Demo()
 	tabs.Main:Select()
 	library:LoadAutoLoadConfig()
 end
+
 return library
+
