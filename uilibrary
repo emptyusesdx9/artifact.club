@@ -5693,7 +5693,11 @@ function library:Window(Settings)
 
 	if not RunService:IsStudio() then
 		if getgenv().alrloaded then
-			WindowFunctions:Unload()
+			WindowFunctions:Notify({
+				Title = "already loaded!",
+				Description = "script already loaded, if u wanna re-execute or use new version please rejoin!",
+				Lifetime = 3,
+			})
 			return
 		end
 		getgenv().alrloaded = true
