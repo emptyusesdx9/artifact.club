@@ -826,7 +826,7 @@ function library:Window(Settings)
 	interact.Position = UDim2.fromScale(0.5, 0.5)
 	interact.Size = UDim2.fromOffset(40, 40)
 	interact.Parent = moveIcon
-
+	
 	local function ChangemoveIconState(State)
 		if State == "Default" then
 			Tween(moveIcon, TweenInfo.new(0.2, Enum.EasingStyle.Sine), {
@@ -845,6 +845,8 @@ function library:Window(Settings)
 	interact.MouseLeave:Connect(function()
 		ChangemoveIconState("Default")
 	end)
+
+
 
 	local TweenService = game:GetService("TweenService")
 	local dragging = false
@@ -879,15 +881,23 @@ function library:Window(Settings)
 		end
 	end
 
-	moveIcon.InputBegan:Connect(function(input)
+	interact.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			onDragStart(input)
 		end
 	end)
 
-	moveIcon.InputChanged:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-			dragInput = input
+	interact.InputChanged:Connect(onDrag)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if input == dragInput and dragging then
+			update(input)
+		end
+	end)
+
+	interact.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = false
 		end
 	end)
 
@@ -910,7 +920,7 @@ function library:Window(Settings)
 	end)
 
 
-	local currentTab = Instance.new("TextLabel")
+ local currentTab = Instance.new("TextLabel")
 	currentTab.Name = "CurrentTab"
 	currentTab.FontFace = Font.new(assets.interFont)
 	currentTab.RichText = true
@@ -931,6 +941,7 @@ function library:Window(Settings)
 	currentTab.Position = UDim2.fromScale(0, 0.5)
 	currentTab.Size = UDim2.fromScale(0.9, 0)
 	currentTab.Parent = elements
+	
 
 	elements.Parent = topbar
 
@@ -1610,7 +1621,7 @@ function library:Window(Settings)
 
 			elementsScrolling.Parent = elements1
 
-			function TabFunctions:Section(Settings)
+						function TabFunctions:Section(Settings)
 				local SectionFunctions = {}
 				local section = Instance.new("Frame")
 				section.Name = "Section"
@@ -1743,144 +1754,170 @@ function library:Window(Settings)
 					return ButtonFunctions
 				end
 
-				function SectionFunctions:Toggle(Settings, Flag)
-					local ToggleFunctions = { Settings = Settings, IgnoreConfig = false, Class = "Toggle" }
-					local toggle = Instance.new("Frame")
-					toggle.Name = "Toggle"
-					toggle.AutomaticSize = Enum.AutomaticSize.Y
-					toggle.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-					toggle.BackgroundTransparency = 1
-					toggle.BorderColor3 = Color3.fromRGB(0, 0, 0)
-					toggle.BorderSizePixel = 0
-					toggle.Size = UDim2.new(1, 0, 0, 38)
-					toggle.Parent = section
+function SectionFunctions:Toggle(Settings, Flag)
+    local ToggleFunctions = { Settings = Settings, Class = "Toggle" }
+    local toggle = Instance.new("Frame")
+    toggle.Name = "Toggle"
+    toggle.AutomaticSize = Enum.AutomaticSize.Y
+    toggle.BackgroundTransparency = 1
+    toggle.Size = UDim2.new(1, 0, 0, 38)
+    toggle.Parent = section
 
-					local toggleName = Instance.new("TextLabel")
-					toggleName.Name = "ToggleName"
-					toggleName.FontFace = Font.new(assets.interFont)
-					toggleName.Text = ToggleFunctions.Settings.Name
-					toggleName.RichText = true
-					toggleName.TextColor3 = Color3.fromRGB(255, 255, 255)
-					toggleName.TextSize = 13
-					toggleName.TextTransparency = 0.5
-					toggleName.TextTruncate = Enum.TextTruncate.AtEnd
-					toggleName.TextXAlignment = Enum.TextXAlignment.Left
-					toggleName.TextYAlignment = Enum.TextYAlignment.Top
-					toggleName.AnchorPoint = Vector2.new(0, 0.5)
-					toggleName.AutomaticSize = Enum.AutomaticSize.Y
-					toggleName.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-					toggleName.BackgroundTransparency = 1
-					toggleName.BorderColor3 = Color3.fromRGB(0, 0, 0)
-					toggleName.BorderSizePixel = 0
-					toggleName.Position = UDim2.fromScale(0, 0.5)
-					toggleName.Size = UDim2.new(1, -50, 0, 0)
-					toggleName.Parent = toggle
+    local toggleName = Instance.new("TextLabel")
+    toggleName.Name = "ToggleName"
+    toggleName.FontFace = Font.new(assets.interFont)
+    toggleName.Text = Settings.Name
+    toggleName.RichText = true
+    toggleName.TextColor3 = Color3.fromRGB(255, 255, 255)
+    toggleName.TextSize = 13
+    toggleName.TextTransparency = 0.5
+    toggleName.TextXAlignment = Enum.TextXAlignment.Left
+    toggleName.AnchorPoint = Vector2.new(0, 0.5)
+    toggleName.AutomaticSize = Enum.AutomaticSize.Y
+    toggleName.BackgroundTransparency = 1
+    toggleName.Position = UDim2.fromScale(0, 0.5)
+    toggleName.Size = UDim2.new(1, -50, 0, 0)
+    toggleName.Parent = toggle
 
-					local toggle1 = Instance.new("ImageButton")
-					toggle1.Name = "Toggle"
-					toggle1.Image = assets.toggleBackground
-					toggle1.ImageColor3 = Color3.fromRGB(87, 86, 86)
-					toggle1.AutoButtonColor = false
-					toggle1.AnchorPoint = Vector2.new(1, 0.5)
-					toggle1.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-					toggle1.BackgroundTransparency = 1
-					toggle1.BorderColor3 = Color3.fromRGB(0, 0, 0)
-					toggle1.BorderSizePixel = 0
-					toggle1.Position = UDim2.fromScale(1, 0.5)
-					toggle1.Size = UDim2.fromOffset(41, 21)
-					toggle1.ImageTransparency = 0.5
+    local togglebool = Settings.Default
+    local items = {}
 
-					local toggleUIPadding = Instance.new("UIPadding")
-					toggleUIPadding.Name = "ToggleUIPadding"
-					toggleUIPadding.PaddingBottom = UDim.new(0, 1)
-					toggleUIPadding.PaddingLeft = UDim.new(0, -2)
-					toggleUIPadding.PaddingRight = UDim.new(0, 3)
-					toggleUIPadding.PaddingTop = UDim.new(0, 1)
-					toggleUIPadding.Parent = toggle1
+					if Settings.Type == "Checkbox" then
+						local toggleButton = Instance.new("TextButton")
+						toggleButton.Text = ""
+						toggleButton.Size = UDim2.new(0, 16, 0, 16)
+						toggleButton.Position = UDim2.new(1, -9, 0.5, 0)
+						toggleButton.AnchorPoint = Vector2.new(1, 0.5)
+						toggleButton.BackgroundColor3 = Color3.fromRGB(67, 67, 68)
+						toggleButton.BorderSizePixel = 0
+						toggleButton.Parent = toggle
 
-					local togglerHead = Instance.new("ImageLabel")
-					togglerHead.Name = "TogglerHead"
-					togglerHead.Image = assets.togglerHead
-					togglerHead.ImageColor3 = Color3.fromRGB(255, 255, 255)
-					togglerHead.AnchorPoint = Vector2.new(1, 0.5)
-					togglerHead.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-					togglerHead.BackgroundTransparency = 1
-					togglerHead.BorderColor3 = Color3.fromRGB(0, 0, 0)
-					togglerHead.BorderSizePixel = 0
-					togglerHead.Position = UDim2.fromScale(0.5, 0.5)
-					togglerHead.Size = UDim2.fromOffset(15, 15)
-					togglerHead.ZIndex = 2
-					togglerHead.Parent = toggle1
-					togglerHead.ImageTransparency = 0.8
+						local buttonCorner = Instance.new("UICorner")
+						buttonCorner.CornerRadius = UDim.new(0, 4)
+						buttonCorner.Parent = toggleButton
 
-					toggle1.Parent = toggle
+						local outline = Instance.new("Frame")
+						outline.Size = UDim2.new(1, -2, 1, -2)
+						outline.Position = UDim2.new(0, 1, 0, 1)
+						outline.BackgroundColor3 = Color3.fromRGB(22, 22, 24)
+						outline.BorderSizePixel = 0
+						outline.BorderMode = Enum.BorderMode.Inset
+						outline.Parent = toggleButton
 
-					local toggle1Transparency = {Enabled = 0, Disabled = 0.5}
-					local togglerHeadTransparency = {Enabled = 0, Disabled = 0.85}
+						local outlineCorner = Instance.new("UICorner")
+						outlineCorner.CornerRadius = UDim.new(0, 4)
+						outlineCorner.Parent = outline
 
-					local TweenSettings = {
-						Info = TweenInfo.new(0.15, Enum.EasingStyle.Quad),
+						local tick = Instance.new("ImageLabel")
+						tick.Image = "rbxassetid://111862698467575"
+						tick.BackgroundTransparency = 1
+						tick.Size = UDim2.new(1, 2, 1, 2)
+						tick.Position = UDim2.new(0, -1, 0, 0)
+						tick.ImageTransparency = togglebool and 0 or 1
+						tick.Parent = outline
 
-						EnabledPosition = UDim2.new(1, 0, 0.5, 0),
-						DisabledPosition = UDim2.new(0.5, 0, 0.5, 0),
-					}
 
-					local togglebool = ToggleFunctions.Settings.Default
+						toggleButton.MouseButton1Click:Connect(function()
+							togglebool = not togglebool
+							local tweenInfo = TweenInfo.new( 0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.InOut)
 
-					local function NewState(State, callback)
-						local transparencyValues = State and {toggle1Transparency.Enabled, togglerHeadTransparency.Enabled}
-							or {toggle1Transparency.Disabled, togglerHeadTransparency.Disabled}
-						local position = State and TweenSettings.EnabledPosition or TweenSettings.DisabledPosition
+							TweenService:Create(tick, tweenInfo, {
+								ImageTransparency = togglebool and 0 or 1
+							}):Play()
 
-						Tween(toggle1, TweenSettings.Info, {
-							ImageTransparency = transparencyValues[1]
-						}):Play()
+							TweenService:Create(toggleButton, tweenInfo, {
+								BackgroundColor3 = togglebool and library.maincolor or Color3.fromRGB(67, 67, 68)
+							}):Play()
 
-						Tween(togglerHead, TweenSettings.Info, {
-							ImageTransparency = transparencyValues[2]
-						}):Play()
+							TweenService:Create(outline, tweenInfo, {
+								BackgroundColor3 = togglebool and library.maincolor or Color3.fromRGB(22, 22, 24)
+							}):Play()
 
-						Tween(togglerHead, TweenSettings.Info, {
-							Position = position
-						}):Play()
+							if Settings.Callback then
+								Settings.Callback(togglebool)
+							end
+						end)
 
-						ToggleFunctions.State = State
-						if callback then
-							callback(togglebool)
-						end
-					end
 
-					NewState(togglebool)
 
-					local function Toggle()
-						togglebool = not togglebool
-						NewState(togglebool, ToggleFunctions.Settings.Callback)
-					end
+    else
+        local toggle1 = Instance.new("ImageButton")
+        toggle1.Name = "Toggle"
+        toggle1.Image = assets.toggleBackground
+        toggle1.ImageColor3 = Color3.fromRGB(87, 86, 86)
+        toggle1.AutoButtonColor = false
+        toggle1.AnchorPoint = Vector2.new(1, 0.5)
+        toggle1.BackgroundTransparency = 1
+        toggle1.Position = UDim2.new(1, -9, 0.5, 0)
+        toggle1.Size = UDim2.new(0, 36, 0, 18)
+        toggle1.Parent = toggle
 
-					toggle1.MouseButton1Click:Connect(Toggle)
+        local togglerHead = Instance.new("ImageLabel")
+        togglerHead.Name = "TogglerHead"
+        togglerHead.Image = assets.togglerHead
+        togglerHead.ImageColor3 = Color3.fromRGB(255, 255, 255)
+        togglerHead.AnchorPoint = Vector2.new(1, 0.5)
+        togglerHead.BackgroundTransparency = 1
+        togglerHead.Position = UDim2.fromScale(0.5, 0.5)
+        togglerHead.Size = UDim2.fromOffset(15, 15)
+        togglerHead.ZIndex = 2
+        togglerHead.Parent = toggle1
 
-					function ToggleFunctions:Toggle()
-						Toggle()
-					end
-					function ToggleFunctions:UpdateState(State)
-						togglebool = State
-						NewState(togglebool, ToggleFunctions.Settings.Callback)
-					end
-					function ToggleFunctions:GetState()
-						return togglebool
-					end
-					function ToggleFunctions:UpdateName(Name)
-						toggleName.Text = Name
-					end
-					function ToggleFunctions:SetVisibility(State)
-						toggle.Visible = State
-					end
+        local TweenSettings = {
+            Info = TweenInfo.new(0.15, Enum.EasingStyle.Quad),
+            EnabledPosition = UDim2.new(1, 0, 0.5, 0),
+            DisabledPosition = UDim2.new(0.5, 0, 0.5, 0),
+        }
 
-					if Flag then
-						library.Options[Flag] = ToggleFunctions
-					end
-					return ToggleFunctions
-				end
+        local toggle1Transparency = {Enabled = 0, Disabled = 0.5}
+        local togglerHeadTransparency = {Enabled = 0, Disabled = 0.85}
+
+        local function NewState(State, callback)
+            local transparencyValues = State and {toggle1Transparency.Enabled, togglerHeadTransparency.Enabled}
+                or {toggle1Transparency.Disabled, togglerHeadTransparency.Disabled}
+            local position = State and TweenSettings.EnabledPosition or TweenSettings.DisabledPosition
+
+            Tween(toggle1, TweenSettings.Info, {ImageTransparency = transparencyValues[1]}):Play()
+            Tween(togglerHead, TweenSettings.Info, {ImageTransparency = transparencyValues[2]}):Play()
+            Tween(togglerHead, TweenSettings.Info, {Position = position}):Play()
+
+            ToggleFunctions.State = State
+            if callback then callback(togglebool) end
+        end
+
+        NewState(togglebool)
+        toggle1.MouseButton1Click:Connect(function()
+            togglebool = not togglebool
+            NewState(togglebool, Settings.Callback)
+        end)
+    end
+
+    function ToggleFunctions:Toggle()
+        if items.toggle_button then
+            items.toggle_button:MouseButton1Click()
+        end
+    end
+
+    function ToggleFunctions:UpdateState(State)
+        togglebool = State
+        if items.tick then
+            items.tick.ImageTransparency = togglebool and 0 or 1
+            items.toggle_button.BackgroundColor3 = togglebool and Color3.fromRGB(87, 86, 86) or Color3.fromRGB(67, 67, 68)
+            items.outline.BackgroundColor3 = togglebool and Color3.fromRGB(87, 86, 86) or Color3.fromRGB(22, 22, 24)
+        end
+    end
+
+    function ToggleFunctions:GetState() return togglebool end
+    function ToggleFunctions:UpdateName(Name) toggleName.Text = Name end
+    function ToggleFunctions:SetVisibility(State) toggle.Visible = State end
+
+    if Flag then
+        library.Options[Flag] = ToggleFunctions
+    end
+
+    return ToggleFunctions
+end
+
 
 				function SectionFunctions:Slider(Settings, Flag)
 					local SliderFunctions = { Settings = Settings, IgnoreConfig = false, Class = "Slider" }
@@ -4609,6 +4646,7 @@ function library:Window(Settings)
 
 				return SectionFunctions
 			end
+		
 
 			local function SelectCurrentTab()
 				local easetime = 0.15
@@ -4651,6 +4689,11 @@ function library:Window(Settings)
 			function TabFunctions:Select()
 				SelectCurrentTab()
 			end
+			
+
+	
+			
+
 
 			function TabFunctions:InsertConfigSection(Side)
 				local configSection = TabFunctions:Section({ Side = "Left" })
@@ -4788,10 +4831,12 @@ function library:Window(Settings)
 			}
 
 			return TabFunctions
-		end
+			
+			end
+
 
 		return SectionFunctions
-	end
+		end
 
 	function WindowFunctions:Notify(Settings)
 		local NotificationFunctions = {}
@@ -5768,6 +5813,10 @@ function library:Demo()
 		Main = tabGroups.TabGroup1:Tab({ Name = "Demo", Image = "rbxassetid://18821914323" }),
 		Settings = tabGroups.TabGroup1:Tab({ Name = "Settings", Image = "rbxassetid://10734950309" })
 	}
+	
+		local subtabs = {
+			MainSection1 = tabs.Main:SubTab({ name = "Test" }),
+		}
 
 	local sections = {
 		MainSection1 = tabs.Main:Section({ Side = "Left" }),
@@ -5964,14 +6013,16 @@ function library:Demo()
 	library:SetFolder("library")
 	tabs.Settings:InsertConfigSection("Left")
 
+
+
 	Window.onUnloaded(function()
 		print("Unloaded!")
 	end)
 
+
 	tabs.Main:Select()
 	library:LoadAutoLoadConfig()
 end
-
 
 
 
